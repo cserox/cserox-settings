@@ -2,12 +2,11 @@ package org.delastochkin;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.Stack;
 
 public class JsonParser {
 
-    private final String input;
+    private final Reader input;
     private final StringBuilder currentWord;
     private final Settings rootSettings;
     private final Stack<Settings> settings;
@@ -15,7 +14,11 @@ public class JsonParser {
     private ParserState state;
     private String currentSettingName;
 
-    public JsonParser(String input) {
+    public static Settings parseSettings(Reader input) throws IOException {
+        return new JsonParser(input).parseSettings();
+    }
+
+    private JsonParser(Reader input) {
         this.input = input;
         this.currentWord = new StringBuilder();
         this.state = this::readingSettingName;
@@ -25,10 +28,9 @@ public class JsonParser {
         this.settings.push(rootSettings);
     }
 
-    public Settings getSettings() throws IOException {
-        Reader inputReader = new StringReader(input);
+    private Settings parseSettings() throws IOException {
         int currentSymbol;
-        while ((currentSymbol = inputReader.read()) != -1) {
+        while ((currentSymbol = input.read()) != -1) {
             state = state.handleCharacter((char) currentSymbol);
         }
         return rootSettings;
@@ -60,6 +62,12 @@ public class JsonParser {
         return this::readingSettingName;
     }
 
+    private String getAndClear(StringBuilder builder) {
+        String value = builder.toString();
+        builder.setLength(0);
+        return value;
+    }
+
     private ParserState defaultAction(Character character) {
         switch(character) {
             case '\"':
@@ -77,12 +85,6 @@ public class JsonParser {
                 currentWord.append(character);
         }
         return state;
-    }
-
-    private String getAndClear(StringBuilder builder) {
-        String value = builder.toString();
-        builder.setLength(0);
-        return value;
     }
 
     private class EscapingState implements ParserState {
