@@ -39,8 +39,8 @@ public class Settings {
         return Optional.ofNullable(settings.get(name));
     }
 
-    public <T, Q> Stream<T> fetch(SettingFilter<Q> filter, Q query, Function<Setting, T> getter) {
-        return fetch((setting) -> filter.check(setting, query), getter);
+    public <T, P> Stream<T> fetch(SettingsFilter<P> filter, P parameters, Function<Setting, T> getter) {
+        return fetch((setting) -> filter.isApplicable(setting, parameters), getter);
     }
 
     public <T> Stream<T> fetch(Predicate<Setting> filter, Function<Setting, T> mapper) {
@@ -71,15 +71,20 @@ public class Settings {
         return settings.values().stream();
     }
 
+	@Override
+	public String toString() {
+		return settings.toString();
+	}
+
     private static class Empty extends Settings {
         @Override
         public Settings newElement(String name) {
-            throw new RuntimeException("Empty settings are immutable");
+            throw new TryingToModifyEmptySettingsError();
         }
 
         @Override
         public void setAttribute(String name, String value) {
-            throw new RuntimeException("Empty settings are immutable");
+			throw new TryingToModifyEmptySettingsError();
         }
 
         @Override
@@ -89,11 +94,6 @@ public class Settings {
 
         @Override
         public Optional<String> attribute(String name) {
-            return Optional.empty();
-        }
-
-        @Override
-        public Optional<Setting> setting(String name) {
             return Optional.empty();
         }
 

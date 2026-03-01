@@ -29,4 +29,9 @@ public abstract class Setting {
     public Setting self() {
         return this;
     }
+
+	@Override
+	public String toString() {
+		return value().toString();
+	}
 }

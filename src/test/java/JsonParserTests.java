@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class JsonParserTests {
     @Test
     void testReadAttribute() throws IOException {
-        String input = "{\n\"name\": Darcula,\n\"dark\": true}";
+        String input = "{\n\"name\": Darcula,\n\t\"dark\": true}";
         Settings settings = JsonParser.parseSettings(new StringReader(input));
         assertEquals("Darcula", settings.attribute("name").orElse(null));
         assertEquals("true", settings.attribute("dark").orElse(null));
@@ -31,7 +31,6 @@ public class JsonParserTests {
         assertNull(colors.attribute("does-not-exist").orElse(null));
     }
 
-    //TODO better tests
     @Test
     void testReadSeveralElements() throws IOException {
         String input = """
